@@ -19,6 +19,7 @@ public class WashType {
     }
 
     //setters
+    /*
     public void setName(String name) {
         this.name = name;
     }
@@ -26,5 +27,5 @@ public class WashType {
     public void setPrice(double price) {
         this.price = price;
     }
-
+    */
 }

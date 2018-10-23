@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.util.Calendar;
 import java.time.LocalTime;
 
-public class WashCard {
+public class WashCard implements Serializable {
 
     int id;
     double balance;
@@ -12,6 +13,10 @@ public class WashCard {
         this.id = id;
         this.balance = balance;
         this.isAdmin = isAdmin;
+    }
+
+    public boolean isAdmin() {
+        return this.isAdmin;
     }
 
     //getters

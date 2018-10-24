@@ -49,10 +49,10 @@ public class POS {
                         //washCar();
                         break;
                     case 2:
-                        //checkBalance();
+                        checkBalance();
                         break;
                     case 3:
-                        //rechargeWashCard();
+                        rechargeWashCard();
                         break;
                     case 4:
                         currentWashCard = null;
@@ -80,6 +80,19 @@ public class POS {
                 }
             }
         }
+    }
+
+    private static void rechargeWashCard() {
+        clearScreen();
+        displayHeader();
+    }
+
+    private static void checkBalance() {
+        clearScreen();
+        displayHeader();
+        System.out.printf("Your current balance is: %.2f%n%n", currentWashCard.getBalance());
+        System.out.printf("Press any key to continue");
+        scn.nextLine();
     }
 
     private static void clearScreen() {

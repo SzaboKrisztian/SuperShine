@@ -3,7 +3,6 @@ import java.util.Calendar;
 import java.time.LocalTime;
 
 public class WashCard implements Serializable {
-
     int id;
     double balance;
     boolean isAdmin;
@@ -19,50 +18,32 @@ public class WashCard implements Serializable {
         return this.isAdmin;
     }
 
-    //getters
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public double getBalance() {
-        return balance;
+        return this.balance;
     }
 
-    //setters
-    public void setId(int id) {
-        this.id=id;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
-
-    //recharge wash card
-    public void rechargeWashCard(WashCard washCard,double amount) {
-        if(amount<1000 && amount>0) {
-            washCard.setBalance(amount);
+    public void rechargeWashCard(double amount) {
+        if(amount > 0 && amount < 1000) {
+            this.balance = amount;
         }
         else {
-            throw new IllegalArgumentException("Wrong sum");
+            throw new IllegalArgumentException("Invalid amount");
         }
     }
 
-    public void deductAmount (WashCard washCard, WashType washType) {
-
-        double currBalance = 0;
-
-        if(checkDiscount(washType)) {
-            currBalance = washCard.getBalance() - washType.getPrice()*0.8;
+    public void charge(double amount) {
+        if (amount >= this.balance) {
+            this.balance -= amount;
+        } else {
+            throw new IllegalArgumentException("Not enough funds");
         }
-
-        else {
-            currBalance = washCard.getBalance() - washType.getPrice();
-
-        }
-        washCard.setBalance(currBalance);
     }
 
-    private boolean checkDiscount (WashType washType) {
+    private boolean checkDiscount(WashType washType) {
 
         //checks if it is a week day
         Calendar calendar = Calendar.getInstance();

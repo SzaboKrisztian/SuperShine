@@ -5,7 +5,6 @@ public class WashCard implements Serializable {
   double balance;
   boolean isAdmin;
 
-  //constructor
   public WashCard(int id, double balance, boolean isAdmin) {
     this.id = id;
     this.balance = balance;
@@ -39,6 +38,4 @@ public class WashCard implements Serializable {
       throw new IllegalArgumentException("Not enough funds");
     }
   }
-
-
 }

@@ -57,7 +57,7 @@ public class POS {
             rechargeWashCard();
             break;
           case 4:
-            currentWashCard = null;
+            logout();
             break;
         }
       } else {
@@ -77,7 +77,7 @@ public class POS {
             kbdInputWashCards();
             break;
           case 3:
-            currentWashCard = null;
+            logout();
             break;
         }
       }
@@ -190,8 +190,17 @@ public class POS {
         }
         break;
       }
-      System.out.printf("Balance: ");
-      balance = readDouble();
+
+      balance = 0;
+      while(true) {
+        System.out.printf("Balance [200 - 1000]: ");
+        balance = readDouble();
+        if (balance < 200 || balance > 1000) {
+          break;
+        } else {
+          System.out.printf("Invalid amount. Try again: ");
+        }
+      }
       System.out.printf("Is it an admin card?: ");
       isAdmin = readBoolean();
 
@@ -286,7 +295,7 @@ public class POS {
   private static void washCar() {
     clearScreen();
     displayHeader();
-    System.out.printf("Choose the wash type:%n%n");
+    System.out.printf("Choose the wash type:%n%n0. Abort wash%n");
     for (int i = 0; i < washTypes.length; i++) {
       System.out.printf("%d. %s - %.2f kr.%n", i + 1, washTypes[i].getName(),
           washTypes[i].getPrice());
@@ -294,9 +303,12 @@ public class POS {
 
     int option = -1;
     do {
-      System.out.printf("Enter a choice between 1 - %d: ", washTypes.length);
+      System.out.printf("Enter a choice between 0 - %d: %n", washTypes.length);
       option = readInt() - 1;
-    } while (option < 0 || option >= washTypes.length);
+    } while (option < -1 || option >= washTypes.length);
+    if (option == -1) {
+      return;
+    }
     WashType chosenWashType = washTypes[option];
     System.out.printf("%n%nYou have chosen a %s wash. ", chosenWashType.getName());
     double amountToCharge = chosenWashType.getPrice();
@@ -309,12 +321,19 @@ public class POS {
 
     System.out.printf("Are you sure you wish to proceed? ");
     if (readBoolean()) {
-      System.out.printf("Wash started.%n");
-      currentWashCard.charge(amountToCharge);
-      // Add action to statistics
+      try {
+        currentWashCard.charge(amountToCharge);
+        saveWashCards();
+        System.out.printf("Wash started. Remember to take your WashCard.%n" +
+            "Thank you for using SuperShine services!%n");
+      } catch (IllegalArgumentException e) {
+        System.out.printf("Not enough funds. Wash aborted.%n");
+      }
     } else {
       System.out.printf("Wash aborted.%n");
     }
+    anyKeyToContinue();
+    logout();
   }
 
   private static boolean checkDiscount(WashType washType) {
@@ -338,5 +357,9 @@ public class POS {
     } else {
       return false;
     }
+  }
+
+  public static void logout() {
+    currentWashCard = null;
   }
 }

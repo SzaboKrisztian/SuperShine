@@ -1,7 +1,7 @@
 public class WashType {
 
-    protected String name;
-    protected double price;
+    private String name;
+    private double price;
 
     //constructor
     public WashType(String name,double price) {

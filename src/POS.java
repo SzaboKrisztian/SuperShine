@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class POS {
@@ -11,18 +12,8 @@ public class POS {
     public static void main(String[] args) {
         initSystem();
 
-        if (args.length == 0) {
-            while (true) {
-                displayMenu();
-            }
-        } else {
-            switch (args[0].toLowerCase()) {
-                case "stats":
-                    break;
-                case "add":
-                    break;
-            }
-
+        while (true) {
+            displayMenu();
         }
     }
 
@@ -40,12 +31,10 @@ public class POS {
             clearScreen();
             displayHeader();
             System.out.printf("Insert your WashCard to continue: ");
-
-            String input = scn.nextLine();
             int washCardID = readInt();
             validateWashCard(washCardID);
         } else {
-            if (!currentWashCard.isOwner()) {
+            if (!currentWashCard.isAdmin()) {
                 clearScreen();
                 displayHeader();
                 System.out.printf("Pick a function to continue: %n");
@@ -57,13 +46,13 @@ public class POS {
                 int choice = readInt();
                 switch (choice) {
                     case 1:
-                        washCar();
+                        //washCar();
                         break;
                     case 2:
-                        checkBalance();
+                        //checkBalance();
                         break;
                     case 3:
-                        rechargeWashCard();
+                        //rechargeWashCard();
                         break;
                     case 4:
                         currentWashCard = null;
@@ -80,7 +69,7 @@ public class POS {
                 int choice = readInt();
                 switch (choice) {
                     case 1:
-                        displaySystemStats();
+                        //displaySystemStats();
                         break;
                     case 2:
                         kbdInputWashCards();
@@ -92,8 +81,6 @@ public class POS {
             }
         }
     }
-
-
 
     private static void clearScreen() {
         for (int i = 0; i < 40; i++) {
@@ -115,16 +102,18 @@ public class POS {
             kbdInputWashCards();
         }
         if (fileInputStream != null) {
-            while (true) {
-                try {
-                    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-                    washCards = (ArrayList<WashCard>)objectInputStream.readObject();
-                    objectInputStream.close();
-                } catch (IOException e) {
-                    // Very small chances of this happening; we won't handle this.
-                } catch (ClassNotFoundException e) {
-                    // Same-same
-                }
+            System.out.printf("File opened successfully.");
+            try {
+                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                washCards = (ArrayList<WashCard>)objectInputStream.readObject();
+                objectInputStream.close();
+                System.out.printf("Entries loaded: %d", washCards.size());
+            } catch (IOException e) {
+                // Very small chances of this happening; we won't handle this.
+                System.out.printf("IO Exception: %s", e.toString());
+            } catch (ClassNotFoundException e) {
+                // Same-same
+                System.out.printf("Class not found: %s", e.toString());
             }
         }
     }
@@ -132,7 +121,7 @@ public class POS {
     private static void validateWashCard(int washCardID) {
         WashCard found = null;
         for (WashCard item: washCards) {
-            if (item.getID() == washCardID) {
+            if (item.getId() == washCardID) {
                 found = item;
                 break;
             }
@@ -156,13 +145,21 @@ public class POS {
                 System.out.printf("ID: ");
                 id = readInt();
                 if (!washCards.isEmpty()) {
+                    boolean found = false;
                     for (WashCard item: washCards) {
-                        if (item.getID() == id);
-                        System.out.printf("Invalid WashCard. Try again: ");
-                        continue;
+                        if (item.getId() == id) {
+                            found = true;
+                            System.out.printf("Invalid WashCard. Try again: ");
+                            break;
+                        }
                     }
-                    break;
+                    if (found) {
+                        continue;
+                    } else {
+                        break;
+                    }
                 }
+                break;
             }
             System.out.printf("Balance: ");
             balance = readDouble();
@@ -174,6 +171,7 @@ public class POS {
             System.out.printf("ID: %d%nBalance: %.2f%nIs admin: %b%n. Are you sure? ", id, balance, isAdmin);
             if (readBoolean()) {
                 washCards.add(new WashCard(id, balance, isAdmin));
+                saveWashCards();
                 System.out.printf("WashCard added to the system.%n");
             } else {
                 System.out.printf("WashCard not added; inputted data has been discarded.%n");

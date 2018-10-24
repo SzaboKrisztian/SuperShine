@@ -1,7 +1,8 @@
 import java.io.*;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Scanner;
 
 public class POS {
@@ -9,6 +10,7 @@ public class POS {
   private static ArrayList<WashCard> washCards;
   private static WashCard currentWashCard;
   private static final Scanner SCN = new Scanner(System.in);
+  private static Statistics stats;
 
 
   public static void main(String[] args) {
@@ -26,6 +28,7 @@ public class POS {
     washTypes[2] = new WashType("De Luxe", 120);
     washCards = new ArrayList<>();
     readWashCards();
+    stats = new Statistics(washTypes);
   }
 
   private static void displayMenu() {
@@ -71,7 +74,7 @@ public class POS {
         int choice = readInt();
         switch (choice) {
           case 1:
-            //displaySystemStats();
+            displaySystemStats();
             break;
           case 2:
             kbdInputWashCards();
@@ -82,6 +85,21 @@ public class POS {
         }
       }
     }
+  }
+
+  private static void displaySystemStats() {
+    System.out.printf("Over how many past days would you like to see statistics?: ");
+    int numDays;
+    while(true) {
+      numDays = readInt();
+      if (numDays <= 0) {
+        System.out.printf("Enter a positive number of days: ");
+      } else {
+        break;
+      }
+    }
+    stats.printStats(LocalDateTime.now().minusDays(numDays), LocalDateTime.now());
+    anyKeyToContinue();
   }
 
   private static void rechargeWashCard() {
@@ -131,18 +149,14 @@ public class POS {
       kbdInputWashCards();
     }
     if (fileInputStream != null) {
-      System.out.printf("File opened successfully.");
       try {
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
         washCards = (ArrayList<WashCard>) objectInputStream.readObject();
         objectInputStream.close();
-        System.out.printf("Entries loaded: %d", washCards.size());
       } catch (IOException e) {
         // Very small chances of this happening; we won't handle this.
-        System.out.printf("IO Exception: %s", e.toString());
       } catch (ClassNotFoundException e) {
         // Same-same
-        System.out.printf("Class not found: %s", e.toString());
       }
     }
   }
@@ -195,7 +209,7 @@ public class POS {
       while(true) {
         System.out.printf("Balance [200 - 1000]: ");
         balance = readDouble();
-        if (balance < 200 || balance > 1000) {
+        if (balance >= 200 && balance <= 1000) {
           break;
         } else {
           System.out.printf("Invalid amount. Try again: ");
@@ -289,7 +303,6 @@ public class POS {
     } catch (FileNotFoundException e) {
       // can't really happen
     }
-
   }
 
   private static void washCar() {
@@ -312,7 +325,7 @@ public class POS {
     WashType chosenWashType = washTypes[option];
     System.out.printf("%n%nYou have chosen a %s wash. ", chosenWashType.getName());
     double amountToCharge = chosenWashType.getPrice();
-    if (checkDiscount(chosenWashType)) {
+    if (checkDiscountEligibility(chosenWashType, LocalDateTime.now())) {
       System.out.printf("It is eligible for the early bird 20%% discount! ");
       amountToCharge *= 0.8;
     }
@@ -324,6 +337,7 @@ public class POS {
       try {
         currentWashCard.charge(amountToCharge);
         saveWashCards();
+        stats.add(new StatsItem(currentWashCard.getId(), LocalDateTime.now(), chosenWashType));
         System.out.printf("Wash started. Remember to take your WashCard.%n" +
             "Thank you for using SuperShine services!%n");
       } catch (IllegalArgumentException e) {
@@ -336,23 +350,22 @@ public class POS {
     logout();
   }
 
-  private static boolean checkDiscount(WashType washType) {
+  public static boolean checkDiscountEligibility(WashType washType, LocalDateTime moment) {
 
     //checks if it is a week day
-    Calendar calendar = Calendar.getInstance();
-    int day = calendar.get(Calendar.DAY_OF_WEEK);
-    boolean weekDay = (day >= 2 && day <= 6);
+    DayOfWeek day = moment.getDayOfWeek();
+    boolean weekDay = !(day.equals(DayOfWeek.SATURDAY) || day.equals(DayOfWeek.SUNDAY));
 
     //checks if time is before 2pm
     LocalTime target = LocalTime.parse("14:00:00.000");
-    LocalTime currTime = LocalTime.now();
+    LocalTime currTime = moment.toLocalTime();
     boolean time = (currTime.isBefore(target));
 
     //checks if its the correct discount type
     String wash = "De Luxe";
-    boolean type = (washType.getName().equals(wash));
+    boolean type = !(washType.getName().equals(wash));
 
-    if (weekDay && time && !type) {
+    if (weekDay && time && type) {
       return true;
     } else {
       return false;

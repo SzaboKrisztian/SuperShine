@@ -1,16 +1,14 @@
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
-public class StatsItem{
+public class StatsItem implements Serializable {
    private int washCardID;
-   private LocalTime time;
-   private LocalDate date;
+   private LocalDateTime time;
    private WashType washType;
 
-   public StatsItem(int washCardID, LocalTime time, LocalDate date, WashType washType){
+   public StatsItem(int washCardID, LocalDateTime time, WashType washType){
      this.washCardID = washCardID;
      this.time = time;
-     this.date = date;
      this.washType = washType;
    }
  
@@ -18,12 +16,8 @@ public class StatsItem{
       return this.washCardID;
    }
    
-   public LocalTime getTime(){
+   public LocalDateTime getTime(){
       return this.time;
-   }
-   
-   public LocalDate getDate(){
-      return this.date;
    }
 
    public WashType getWashType(){

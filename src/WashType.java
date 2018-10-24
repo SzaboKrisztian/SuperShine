@@ -1,5 +1,6 @@
-public class WashType {
+import java.io.Serializable;
 
+public class WashType implements Serializable {
   private String name;
   private double price;
 

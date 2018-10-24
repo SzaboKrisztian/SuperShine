@@ -85,14 +85,27 @@ public class POS {
     private static void rechargeWashCard() {
         clearScreen();
         displayHeader();
+        System.out.printf("Input the amount: ");
+        double rechargeAmount = readDouble();
+        try {
+            currentWashCard.rechargeWashCard(rechargeAmount);
+            System.out.printf("Recharge successful.%n");
+        } catch (IllegalArgumentException e) {
+            System.out.printf("Invalid amount; recharge aborted.%n");
+        }
+        anyKeyToContinue();
+    }
+
+    private static void anyKeyToContinue() {
+        System.out.printf("Press any key to continue.");
+        scn.nextLine();
     }
 
     private static void checkBalance() {
         clearScreen();
         displayHeader();
         System.out.printf("Your current balance is: %.2f%n%n", currentWashCard.getBalance());
-        System.out.printf("Press any key to continue");
-        scn.nextLine();
+        anyKeyToContinue();
     }
 
     private static void clearScreen() {

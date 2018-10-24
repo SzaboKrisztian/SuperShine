@@ -1,24 +1,24 @@
 public class WashType {
 
-    private String name;
-    private double price;
+  private String name;
+  private double price;
 
-    //constructor
-    public WashType(String name,double price) {
-        this.name = name;
-        this.price = price;
-    }
+  //constructor
+  public WashType(String name, double price) {
+    this.name = name;
+    this.price = price;
+  }
 
-    //getters
-    public String getName(){
-        return name;
-    }
+  //getters
+  public String getName() {
+    return name;
+  }
 
-    public double getPrice(){
-        return price;
-    }
+  public double getPrice() {
+    return price;
+  }
 
-    //setters
+  //setters
     /*
     public void setName(String name) {
         this.name = name;

@@ -72,14 +72,14 @@ public class Statistics {
       incomePerWashType = new HashMap<>();
 
       // Init all the HashMaps based on the already known WashTypes
-      for (WashType item: washTypes) {
+      for (WashType item : washTypes) {
         countPerWashType.put(item.getName(), 0);
         countDiscountedPerWashType.put(item.getName(), 0);
         incomePerWashType.put(item.getName(), 0.0);
       }
 
       ArrayList<Integer> uniqueCustomers = new ArrayList<>();
-      for (StatsItem item: data) {
+      for (StatsItem item : data) {
         if (item.getTime().isAfter(lowerBoundary) && item.getTime().isBefore(upperBoundary)) {
           // Count all the unique customer IDs found in the data
           if (!uniqueCustomers.contains(item.getWashCardID())) {
@@ -132,7 +132,7 @@ public class Statistics {
     for (int i = 0; i < washTypes.length; i++) {
       washTypeNames[i] = washTypes[i].getName();
     }
-    for (String name: washTypeNames) {
+    for (String name : washTypeNames) {
       System.out.printf("- %s: Total: %d Discounted: %d Income: %.2f kr.%n", name,
           stats.getCountPerWashType().get(name),
           stats.getCountDiscountedPerWashType().get(name),
@@ -140,20 +140,20 @@ public class Statistics {
     }
 
     int numPurchases = 0;
-    for (int count: stats.getCountPerWashType().values()) {
+    for (int count : stats.getCountPerWashType().values()) {
       numPurchases += count;
     }
 
     System.out.printf("Total number of purchases: %d%n", numPurchases);
 
     int numDiscounts = 0;
-    for (int count: stats.getCountDiscountedPerWashType().values()) {
+    for (int count : stats.getCountDiscountedPerWashType().values()) {
       numDiscounts += count;
     }
     System.out.printf("Total number of discounts: %d%n", numDiscounts);
 
     double totalIncome = 0;
-    for (double income: stats.getIncomePerWashType().values()) {
+    for (double income : stats.getIncomePerWashType().values()) {
       totalIncome += income;
     }
     System.out.printf("Total income: %.2f kr.%n", totalIncome);

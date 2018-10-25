@@ -11,6 +11,7 @@ public class POS {
   private static WashCard currentWashCard;
   private static final Scanner SCN = new Scanner(System.in);
   private static Statistics stats;
+  private static ReceiptPrinter receiptPrinter;
 
 
   public static void main(String[] args) {
@@ -29,13 +30,14 @@ public class POS {
     washCards = new ArrayList<>();
     readWashCards();
     stats = new Statistics(washTypes);
+    receiptPrinter = new ReceiptPrinter("receipts\\");
   }
 
   private static void displayMenu() {
     if (currentWashCard == null) {
       clearScreen();
       displayHeader();
-      System.out.printf("Insert your WashCard to continue: ");
+      System.out.print("Insert your WashCard to continue: ");
       int washCardID = readInt();
       validateWashCard(washCardID);
     } else {
@@ -88,12 +90,12 @@ public class POS {
   }
 
   private static void displaySystemStats() {
-    System.out.printf("Over how many past days would you like to see statistics?: ");
+    System.out.print("Over how many past days would you like to see statistics?: ");
     int numDays;
-    while(true) {
+    while (true) {
       numDays = readInt();
       if (numDays <= 0) {
-        System.out.printf("Enter a positive number of days: ");
+        System.out.print("Enter a positive number of days: ");
       } else {
         break;
       }
@@ -105,12 +107,18 @@ public class POS {
   private static void rechargeWashCard() {
     clearScreen();
     displayHeader();
-    System.out.printf("Input the amount: ");
+    System.out.print("Input the amount: ");
     double rechargeAmount = readDouble();
     try {
       currentWashCard.rechargeWashCard(rechargeAmount);
       saveWashCards();
       System.out.printf("Successfully recharged with %.2f kr.%n", rechargeAmount);
+      System.out.print("Would you like a receipt? ");
+      if (readBoolean()) {
+        String message = String.format("WashCard id %08d recharge with %.2f kr.%n" +
+        "from card number XXXX XXXX XXXX XXXX", currentWashCard.getId(), rechargeAmount);
+        receiptPrinter.printReceipt(message);
+      }
     } catch (IllegalArgumentException e) {
       System.out.printf("Invalid amount; recharge aborted.%n");
     }
@@ -118,7 +126,7 @@ public class POS {
   }
 
   private static void anyKeyToContinue() {
-    System.out.printf("Press any key to continue.");
+    System.out.print("Press any key to continue.");
     SCN.nextLine();
   }
 
@@ -126,6 +134,12 @@ public class POS {
     clearScreen();
     displayHeader();
     System.out.printf("Your current balance is: %.2f%n%n", currentWashCard.getBalance());
+    System.out.print("Would you like a receipt? ");
+    if (readBoolean()) {
+      String message = String.format("WashCard id %08d has a balance of %.2f.",
+          currentWashCard.getId(), currentWashCard.getBalance());
+      receiptPrinter.printReceipt(message);
+    }
     anyKeyToContinue();
   }
 
@@ -153,10 +167,8 @@ public class POS {
         ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
         washCards = (ArrayList<WashCard>) objectInputStream.readObject();
         objectInputStream.close();
-      } catch (IOException e) {
+      } catch (IOException | ClassNotFoundException e) {
         // Very small chances of this happening; we won't handle this.
-      } catch (ClassNotFoundException e) {
-        // Same-same
       }
     }
   }
@@ -172,7 +184,7 @@ public class POS {
     if (found != null) {
       currentWashCard = found;
     } else {
-      System.out.printf("Invalid WashCard; try again.");
+      System.out.print("Invalid WashCard; try again.");
     }
 
   }
@@ -185,14 +197,14 @@ public class POS {
     while (true) {
       // Read the data from the keyboard
       while (true) {
-        System.out.printf("ID: ");
+        System.out.print("ID: ");
         id = readInt();
         if (!washCards.isEmpty()) {
           boolean found = false;
           for (WashCard item : washCards) {
             if (item.getId() == id) {
               found = true;
-              System.out.printf("Invalid WashCard. Try again: ");
+              System.out.print("Invalid WashCard. Try again: ");
               break;
             }
           }
@@ -205,22 +217,21 @@ public class POS {
         break;
       }
 
-      balance = 0;
-      while(true) {
-        System.out.printf("Balance [200 - 1000]: ");
+      while (true) {
+        System.out.print("Balance [200 - 1000]: ");
         balance = readDouble();
         if (balance >= 200 && balance <= 1000) {
           break;
         } else {
-          System.out.printf("Invalid amount. Try again: ");
+          System.out.print("Invalid amount. Try again: ");
         }
       }
-      System.out.printf("Is it an admin card?: ");
+      System.out.print("Is it an admin card?: ");
       isAdmin = readBoolean();
 
       // Get confirmation if read data is to be added to the system
       System.out.printf("Do you want to add the WashCard with the following data: %n");
-      System.out.printf("ID: %d%nBalance: %.2f%nIs admin: %b%n. Are you sure? ",
+      System.out.printf("ID: %d%nBalance: %.2f%nIs admin: %b%nAre you sure? ",
           id, balance, isAdmin);
       if (readBoolean()) {
         washCards.add(new WashCard(id, balance, isAdmin));
@@ -231,7 +242,7 @@ public class POS {
       }
 
       // Ask if the user would add another WashCard
-      System.out.printf("Do you want to add another WashCard? ");
+      System.out.print("Do you want to add another WashCard? ");
       if (!readBoolean()) {
         break;
       }
@@ -249,7 +260,7 @@ public class POS {
         result = Integer.parseInt(input);
         success = true;
       } catch (NumberFormatException e) {
-        System.out.printf("Input cannot be resolved to an integer. Try again: ");
+        System.out.print("Input cannot be resolved to an integer. Try again: ");
       }
     }
     return result;
@@ -265,7 +276,7 @@ public class POS {
         result = Double.parseDouble(input);
         success = true;
       } catch (NumberFormatException e) {
-        System.out.printf("Input cannot be resolved to a double. Try again: ");
+        System.out.print("Input cannot be resolved to a double. Try again: ");
       }
     }
     return result;
@@ -314,7 +325,7 @@ public class POS {
           washTypes[i].getPrice());
     }
 
-    int option = -1;
+    int option;
     do {
       System.out.printf("Enter a choice between 0 - %d: %n", washTypes.length);
       option = readInt() - 1;
@@ -326,13 +337,13 @@ public class POS {
     System.out.printf("%n%nYou have chosen a %s wash. ", chosenWashType.getName());
     double amountToCharge = chosenWashType.getPrice();
     if (checkDiscountEligibility(chosenWashType, LocalDateTime.now())) {
-      System.out.printf("It is eligible for the early bird 20%% discount! ");
+      System.out.print("It is eligible for the early bird 20% discount! ");
       amountToCharge *= 0.8;
     }
     System.out.printf("%.2f kr. will be charged to your WashCard.%n",
         amountToCharge);
 
-    System.out.printf("Are you sure you wish to proceed? ");
+    System.out.print("Are you sure you wish to proceed? ");
     if (readBoolean()) {
       try {
         currentWashCard.charge(amountToCharge);
@@ -340,6 +351,12 @@ public class POS {
         stats.add(new StatsItem(currentWashCard.getId(), LocalDateTime.now(), chosenWashType));
         System.out.printf("Wash started. Remember to take your WashCard.%n" +
             "Thank you for using SuperShine services!%n");
+        System.out.print("Would you like a receipt? ");
+        if (readBoolean()) {
+          String message = String.format("%s wash ..... %.2f", chosenWashType.getName(),
+              chosenWashType.getPrice());
+          receiptPrinter.printReceipt(message);
+        }
       } catch (IllegalArgumentException e) {
         System.out.printf("Not enough funds. Wash aborted.%n");
       }
@@ -372,7 +389,7 @@ public class POS {
     }
   }
 
-  public static void logout() {
+  private static void logout() {
     currentWashCard = null;
   }
 }

@@ -4,15 +4,27 @@ import java.util.ArrayList;
 import java.lang.Math;
 import java.util.HashMap;
 
+/**
+ * Provides a persistently stored record of washes, which can then be viewed
+ * over a specific period chosen by the administrator.
+ */
 public class Statistics {
   private ArrayList<StatsItem> actionLog = new ArrayList<>();
   private WashType[] washTypes;
 
+  /**
+   * Constructor requires a reference to the possible wash types
+   * @param washTypes An array containing all the possible wash types provided by the system.
+   */
   public Statistics(WashType[] washTypes) {
     this.washTypes = washTypes;
     this.reloadData();
   }
 
+  /**
+   * Add an event (as a StatsItem object) to the statistics log
+   * @param item The {@link StatsItem} that holds the information of the event to be logged.
+   */
   public void add(StatsItem item) {
     actionLog.add(item);
     this.saveData();
@@ -125,7 +137,17 @@ public class Statistics {
     }
   }
 
+  /**
+   * Prints the statistics between the two given dates
+   * @param lowerBoundary The "low" temporal boundary
+   * @param upperBoundary The "high" temporal boundary
+   * @throws IllegalArgumentException If the temporal arguments are reversed.
+   */
   public void printStats(LocalDateTime lowerBoundary, LocalDateTime upperBoundary) {
+    if (upperBoundary.isBefore(lowerBoundary)) {
+      throw new IllegalArgumentException("The first parameter is expected to be temporally " +
+          "before the second parameter.");
+    }
     StatisticsCounts stats = new StatisticsCounts(actionLog, lowerBoundary, upperBoundary);
     System.out.printf("%n%nStatistics%n--------------------%n%n");
     String[] washTypeNames = new String[washTypes.length];
@@ -160,58 +182,4 @@ public class Statistics {
 
     System.out.printf("Number of unique customers: %d%n", stats.getCountUniqueCustomers());
   }
-
-  /*
-  public ArrayList<Integer> eachWashTypeStat() {
-
-    int ecoCount = 0;
-    int stanCount = 0;
-    int delCount = 0;
-
-    for (StatsItem item : actionLog) {
-      if (item.getWashType().getName().equals("Economy")) {
-        ecoCount++;
-      } else if (item.getWashType().getName().equals("Standard")) {
-        stanCount++;
-      } else if (item.getWashType().getName().equals("De Luxe")) {
-        delCount++;
-      }
-    }
-    ArrayList<Integer> washTypeCount = new ArrayList<>(3);
-    washTypeCount.add(0, ecoCount);
-    washTypeCount.add(1, stanCount);
-    washTypeCount.add(2, delCount);
-
-    return washTypeCount;
-  }
-
-  public String washTypeStat() {
-
-    int maxNum = Math.max(ecoCount, Math.max(stanCount, delCount));
-
-    switch (maxNum) {
-      case ecoCount:
-        return "Economy";
-      break;
-      case stanCount:
-        return "Standard";
-      break;
-      case delCount:
-        return "De Luxe";
-      break;
-    }
-
-  }
-
-  public void totalPrice() {
-    ArrayList<Integer> washTypePrice = eachWashTypeStat();
-
-    washTypePrice.add(0, washTypeStat.get(0) * 50);
-    washTypePrice.add(1, washTypeStat.get(1) * 80);
-    washTypePrice.add(2, washTypeStat.get(2) * 120);
-    washTypePrice.add(3, washTypePrice.get(0) + washTypePrice.get(1) + washTypePrice.get(2));
-
-    System.out.println("Total price customers spent: " + washTypePrice.get(3));
-  }
-  */
 }

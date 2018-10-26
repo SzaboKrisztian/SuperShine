@@ -5,6 +5,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * The SuperShine system's main class that handles menus, user input, and executing
+ * the appropriate user actions.
+ */
 public class POS {
   private static WashType[] washTypes;
   private static ArrayList<WashCard> washCards;
@@ -13,7 +17,9 @@ public class POS {
   private static Statistics stats;
   private static ReceiptPrinter receiptPrinter;
 
-
+  /**
+   * The program's main entry point
+   */
   public static void main(String[] args) {
     initSystem();
 
@@ -23,14 +29,17 @@ public class POS {
   }
 
   private static void initSystem() {
+    readWashTypes();
+    readWashCards();
+    stats = new Statistics(washTypes);
+    receiptPrinter = new ReceiptPrinter("receipts\\");
+  }
+
+  private static void readWashTypes() {
     washTypes = new WashType[3];
     washTypes[0] = new WashType("Economy", 50);
     washTypes[1] = new WashType("Standard", 80);
     washTypes[2] = new WashType("De Luxe", 120);
-    washCards = new ArrayList<>();
-    readWashCards();
-    stats = new Statistics(washTypes);
-    receiptPrinter = new ReceiptPrinter("receipts\\");
   }
 
   private static void displayMenu() {
@@ -100,19 +109,26 @@ public class POS {
         break;
       }
     }
-    stats.printStats(LocalDateTime.now().minusDays(numDays), LocalDateTime.now());
+    try {
+      stats.printStats(LocalDateTime.now().minusDays(numDays), LocalDateTime.now());
+    } catch (IllegalArgumentException e) {
+      // In this implementation, it's impossible for this exception to be thrown.
+    }
     anyKeyToContinue();
   }
 
   private static void rechargeWashCard() {
     clearScreen();
     displayHeader();
-    System.out.print("Input the amount: ");
+    System.out.print("How much do you want to recharge with? [50 - 1000]: ");
     double rechargeAmount = readDouble();
+    System.out.printf("Insert your preferred method of payment to continue.%n");
+    anyKeyToContinue();
     try {
       currentWashCard.rechargeWashCard(rechargeAmount);
       saveWashCards();
       System.out.printf("Successfully recharged with %.2f kr.%n", rechargeAmount);
+      System.out.printf("Remember to take both your cards.");
       System.out.print("Would you like a receipt? ");
       if (readBoolean()) {
         String message = String.format("WashCard id %08d recharge with %.2f kr.%n" +
@@ -160,6 +176,7 @@ public class POS {
     try {
       fileInputStream = new FileInputStream("SuperShine.dat");
     } catch (FileNotFoundException e) {
+      System.out.printf("No WashCards registered on the system. Add some now:%n");
       kbdInputWashCards();
     }
     if (fileInputStream != null) {
@@ -354,7 +371,7 @@ public class POS {
         System.out.print("Would you like a receipt? ");
         if (readBoolean()) {
           String message = String.format("%s wash ..... %.2f", chosenWashType.getName(),
-              chosenWashType.getPrice());
+              amountToCharge);
           receiptPrinter.printReceipt(message);
         }
       } catch (IllegalArgumentException e) {
@@ -367,6 +384,14 @@ public class POS {
     logout();
   }
 
+  /**
+   * Static method meant to check whether a particular was type is eligible
+   * for the early bird discount, at the moment passed to it
+   * @param washType The wash type that should be checked
+   * @param moment The moment in time the check should be done against
+   * @return A boolean value representing whether the chosen wash type
+   *         is eligible for a discount at that moment
+   */
   public static boolean checkDiscountEligibility(WashType washType, LocalDateTime moment) {
 
     //checks if it is a week day

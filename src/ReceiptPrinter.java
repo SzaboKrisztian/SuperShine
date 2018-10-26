@@ -17,6 +17,14 @@ public class ReceiptPrinter {
    */
   public ReceiptPrinter(String path) {
     this.path = path;
+    String checkPath = this.path;
+    if (this.path.endsWith("\\")) {
+      checkPath = this.path.substring(0, this.path.length() - 1);
+    }
+    File directoryName = new File(checkPath);
+    if (!directoryName.exists()) {
+      directoryName.mkdir();
+    }
   }
 
   /**
